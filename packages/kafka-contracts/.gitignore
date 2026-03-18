@@ -1,0 +1,26 @@
+# Generated files
+generated
+
+# Packages
+node_modules
+
+# Log files
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Env
+.env
+
+# Build
+build
+
+# Miscellaneous
+.turbo
+.tmp
+coverage

@@ -1,0 +1,53 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"remoteCache": {
+		"enabled": true
+	},
+	"globalDependencies": ["tsconfig.json"],
+	"tasks": {
+		"py:install": {
+			"cache": false
+		},
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": [
+				"src/**",
+				"package.json",
+				"tsconfig.json",
+				"tsconfig.build.json",
+				"tsup.config.ts"
+			],
+			"outputs": ["build/**"],
+			"outputLogs": "errors-only"
+		},
+		"lint": {
+			"dependsOn": ["^build"],
+			"inputs": [
+				"../../eslint.config.js",
+				"../../.prettierrc.json",
+				"../../tsconfig.eslint.json",
+				".prettierrc.{js,cjs}",
+				"src/**",
+				"package.json",
+
+				"tsconfig.eslint.json"
+			],
+			"outputs": [],
+			"outputLogs": "errors-only"
+		},
+		"format": {
+			"dependsOn": ["^build"],
+			"inputs": [
+				"../../eslint.config.js",
+				"../../.prettierrc.json",
+				"../../tsconfig.eslint.json",
+				".prettierrc.{js,cjs}",
+				"src/**",
+				"package.json",
+				"tsconfig.eslint.json"
+			],
+			"outputs": [],
+			"outputLogs": "errors-only"
+		}
+	}
+}

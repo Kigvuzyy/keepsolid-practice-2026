@@ -1,0 +1,41 @@
+enum BookVectorizationStatus {
+    PENDING
+    IN_PROGRESS
+    COMPLETED
+    FAILED
+}
+
+model BookVectorizationState {
+    bookId BigInt @id @map("book_id")
+
+    status BookVectorizationStatus @default(PENDING)
+
+    expectedChaptersCount Int @map("expected_chapters_count")
+
+    completedAt DateTime? @map("completed_at")
+    lastError   String?   @map("last_error")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([status])
+    @@map("book_vectorization_states")
+}
+
+model BookVectorizedChapter {
+    id BigInt @id
+
+    bookId BigInt @map("book_id")
+
+    chapterId    String @map("chapter_id")
+    chapterIndex Int    @map("chapter_index")
+    chunksCount  Int    @map("chunks_count")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([bookId, chapterId])
+    @@index([bookId])
+    @@index([bookId, chapterIndex])
+    @@map("book_vectorized_chapters")
+}

@@ -1,0 +1,169 @@
+enum UploadIntentStatus {
+    PENDING
+    CONFIRMED
+    FAILED
+    EXPIRED
+    CANCELED
+}
+
+enum BookStatus {
+    UPLOADED
+    PROCESSING
+    READY
+    FAILED
+    DELETED
+}
+
+enum BookVectorizationStatus {
+    PENDING
+    IN_PROGRESS
+    COMPLETED
+    FAILED
+}
+
+enum BookSearchSuggestionKind {
+    BOOK_TITLE
+    AUTHOR
+}
+
+model UploadIntent {
+    id     BigInt @id
+    userId BigInt @map("user_id")
+
+    book Book?
+
+    status UploadIntentStatus @default(PENDING)
+
+    bucket           String
+    objectKey        String @map("object_key")
+    originalFileName String @map("original_file_name")
+
+    expectedContentType String? @map("expected_content_type")
+    expectedSizeBytes   BigInt? @map("expected_size_bytes")
+
+    actualContentType String? @map("actual_content_type")
+    actualSizeBytes   BigInt? @map("actual_size_bytes")
+
+    etag               String?
+    presignedExpiresAt DateTime  @map("presigned_expires_at")
+    confirmedAt        DateTime? @map("confirmed_at")
+    failedReason       String?   @map("failed_reason")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([bucket, objectKey])
+    @@index([userId, status, createdAt])
+    @@index([status, presignedExpiresAt])
+    @@map("upload_intents")
+}
+
+model Book {
+    id      BigInt @id
+    ownerId BigInt @map("owner_id")
+
+    status BookStatus @default(UPLOADED)
+
+    title          String
+    description    String?
+    authors        String[]
+    coverBucket    String?  @map("cover_bucket")
+    coverObjectKey String?  @map("cover_object_key")
+
+    failedReason String? @map("failed_reason")
+
+    uploadIntentId BigInt       @unique @map("upload_intent_id")
+    uploadIntent   UploadIntent @relation(fields: [uploadIntentId], references: [id], onDelete: Restrict)
+
+    chapters              BookChapter[]
+    vectorizationProgress BookVectorizationProgress?
+    vectorizedChapters    BookVectorizedChapter[]
+    searchSuggestions     BookSearchSuggestion[]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([ownerId, status, createdAt])
+    @@index([status, updatedAt])
+    @@map("books")
+}
+
+model BookChapter {
+    id BigInt @id
+
+    bookId BigInt @map("book_id")
+    book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+    html              String
+    externalChapterId String  @map("external_chapter_id")
+    chapterIndex      Int     @map("chapter_index")
+    title             String?
+
+    bucket    String?
+    objectKey String? @map("object_key")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([bookId, externalChapterId])
+    @@unique([bookId, chapterIndex])
+    @@index([bookId, chapterIndex])
+    @@map("book_chapters")
+}
+
+model BookVectorizationProgress {
+    bookId BigInt @id @map("book_id")
+    book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+    status BookVectorizationStatus @default(PENDING)
+
+    expectedChaptersCount Int @default(0) @map("expected_chapters_count")
+
+    startedAt   DateTime? @map("started_at")
+    completedAt DateTime? @map("completed_at")
+    lastError   String?   @map("last_error")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([status, updatedAt])
+    @@map("book_vectorization_progress")
+}
+
+model BookVectorizedChapter {
+    id BigInt @id
+
+    bookId BigInt @map("book_id")
+    book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+    externalChapterId String   @map("external_chapter_id")
+    chunksCount       Int      @map("chunks_count")
+    vectorizedAt      DateTime @default(now()) @map("vectorized_at")
+    updatedAt         DateTime @updatedAt @map("updated_at")
+
+    @@unique([bookId, externalChapterId])
+    @@index([bookId, vectorizedAt])
+    @@map("book_vectorized_chapters")
+}
+
+model BookSearchSuggestion {
+    id BigInt @id
+
+    bookId BigInt @map("book_id")
+    book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+    kind BookSearchSuggestionKind
+
+    sourceKey       String @map("source_key")
+    value           String
+    normalizedValue String @map("normalized_value")
+    rank            Int    @default(0)
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([bookId, sourceKey])
+    @@index([normalizedValue(ops: raw("gin_trgm_ops"))], type: Gin, map: "book_search_suggestions_normalized_value_trgm_idx")
+    @@index([bookId, kind], map: "book_search_suggestions_book_id_kind_idx")
+    @@map("book_search_suggestions")
+}

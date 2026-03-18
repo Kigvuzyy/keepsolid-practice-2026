@@ -1,0 +1,1 @@
+export const REDIS_MODULE_OPTIONS = Symbol("REDIS_MODULE_OPTIONS");

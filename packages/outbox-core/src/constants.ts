@@ -1,0 +1,2 @@
+export const OUTBOX_OPTIONS = Symbol("OUTBOX_OPTIONS");
+export const OUTBOX_ADAPTER_FACTORY = Symbol("OUTBOX_ADAPTER_FACTORY");

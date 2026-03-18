@@ -1,0 +1,62 @@
+{
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "@kigvuzyy/redis-nest",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "tsgo --project tsconfig.json --noEmit --lib ESNext && tsup",
+		"lint": "prettier --check . && cross-env TIMING=1 eslint --format=pretty src",
+		"format": "prettier --write . && cross-env TIMING=1 eslint --fix --format=pretty src",
+		"prepack": "pnpm run lint && pnpm run build"
+	},
+	"exports": {
+		".": {
+			"require": {
+				"types": "./build/index.d.ts",
+				"default": "./build/index.js"
+			},
+			"import": {
+				"types": "./build/index.d.mts",
+				"default": "./build/index.mjs"
+			}
+		}
+	},
+	"main": "./build/index.js",
+	"module": "./build/index.mjs",
+	"types": "./build/index.d.ts",
+	"directories": {
+		"lib": "src",
+		"test": "__tests__"
+	},
+	"files": [
+		"build"
+	],
+	"license": "MIT",
+	"dependencies": {
+		"@kigvuzyy/observability": "workspace:^",
+		"ioredis": "^5.10.0"
+	},
+	"peerDependencies": {
+		"@nestjs/common": "^11",
+		"@nestjs/core": "^11"
+	},
+	"devDependencies": {
+		"@nestjs/common": "catalog:nest11",
+		"@nestjs/core": "catalog:nest11",
+		"@types/node": "^25.0.2",
+		"esbuild-plugin-version-injector": "^1.2.1",
+		"eslint": "^9.38.0",
+		"eslint-config-neon": "^0.2.9",
+		"prettier": "^3.6.2",
+		"tsc-alias": "^1.8.16",
+		"tsup": "^8.5.0",
+		"typescript": "^5.9.3"
+	},
+	"engines": {
+		"node": ">=25.2.1"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	}
+}

@@ -1,0 +1,36 @@
+model Outbox {
+    id String @id @default(uuid())
+
+    topic String
+
+    type        String
+    specVersion Int    @map("spec_version")
+    payload     Json
+
+    aggregateType String @map("aggregate_type")
+    aggregateId   String @map("aggregate_id")
+
+    source         String
+    instance       String
+    serviceVersion String? @map("service_version")
+
+    correlationId String? @map("correlation_id") @db.Uuid
+    causationId   String? @map("causation_id") @db.Uuid
+    traceParent   String? @map("trace_parent")
+    traceState    String? @map("trace_state")
+
+    occurredAt DateTime @default(now()) @map("occurred_at")
+
+    @@index([occurredAt])
+    @@index([correlationId])
+    @@index([aggregateType, aggregateId])
+    @@index([type])
+    @@map("outbox_events")
+}
+
+model Processed {
+    eventId     String   @id @map("event_id")
+    processedAt DateTime @default(now()) @map("processed_at")
+
+    @@map("processed_outbox_events")
+}

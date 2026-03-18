@@ -1,0 +1,13 @@
+model BookReadModel {
+    bookId BigInt @id @map("book_id")
+
+    title          String
+    description    String?
+    authors        String[]
+    coverObjectKey String?  @map("cover_object_key")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("book_read_models")
+}

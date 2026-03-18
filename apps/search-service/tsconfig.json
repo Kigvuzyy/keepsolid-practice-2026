@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig.json",
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"noEmitHelpers": true,
+		"importHelpers": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"exactOptionalPropertyTypes": false,
+		"paths": {
+			"@/*": ["./src/*"],
+			"database/*": ["./prisma/generated/*"]
+		}
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules"]
+}

@@ -1,0 +1,68 @@
+{
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "book-service",
+	"version": "1.0.0",
+	"description": "",
+	"private": true,
+	"scripts": {
+		"start": "node --trace-warnings --env-file=.env --import @kigvuzyy/observability/otel/preload ./build/main.mjs",
+		"start:dev": "cross-env NODE_ENV=development tsup --watch",
+		"start:debug": "cross-env NODE_ENV=development tsup --watch --onSuccess \"node --inspect build/main.js\"",
+		"prebuild": "prisma generate --schema ./prisma/schema",
+		"build": "tsgo --project tsconfig.json --noEmit --lib ESNext && tsup",
+		"build:check": "tsgo --noEmit",
+		"lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\""
+	},
+	"main": "./build/main.mjs",
+	"directories": {
+		"lib": "src"
+	},
+	"files": [
+		"build"
+	],
+	"license": "MIT",
+	"keywords": [],
+	"dependencies": {
+		"@kigvuzyy/idempotency-core": "workspace:*",
+		"@kigvuzyy/idempotency-prisma-adapter": "workspace:*",
+		"@kigvuzyy/minio-nest": "workspace:*",
+		"@kigvuzyy/kafka-contracts": "workspace:*",
+		"@kigvuzyy/kafka-infra": "workspace:*",
+		"@kigvuzyy/kafka-nest": "workspace:*",
+		"@kigvuzyy/kafka-topics": "workspace:*",
+		"@kigvuzyy/observability": "workspace:*",
+		"@kigvuzyy/outbox-core": "workspace:*",
+		"@kigvuzyy/outbox-prisma-adapter": "workspace:*",
+		"@kigvuzyy/shared": "workspace:*",
+		"@kigvuzyy/snowflake-id": "workspace:*",
+		"@nestjs-cls/transactional": "^3.2.0",
+		"@nestjs-cls/transactional-adapter-prisma": "^1.3.4",
+		"@nestjs/common": "catalog:nest11",
+		"@nestjs/core": "catalog:nest11",
+		"@nestjs/cqrs": "catalog:nest11",
+		"@nestjs/microservices": "catalog:nest11",
+		"@nestjs/platform-fastify": "catalog:nest11",
+		"@nestjs/terminus": "catalog:nest11",
+		"@prisma/adapter-pg": "catalog:prisma",
+		"@prisma/client": "catalog:prisma",
+		"dotenv": "^17.2.3",
+		"kafkajs": "^2.2.4",
+		"minio": "^8.0.6",
+		"nestjs-cls": "^6.2.0",
+		"nestjs-zod": "^5.0.1",
+		"reflect-metadata": "catalog:nest11",
+		"rxjs": "catalog:nest11",
+		"tslib": "catalog:nest11",
+		"zod": "^4.1.12"
+	},
+	"devDependencies": {
+		"@types/node": "^25.0.2",
+		"fastify": "^5.6.2",
+		"prisma": "catalog:prisma",
+		"tsconfig-paths": "^4.2.0"
+	},
+	"engines": {
+		"node": ">=25.5.0"
+	}
+}

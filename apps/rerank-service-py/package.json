@@ -1,0 +1,10 @@
+{
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "rerank-service-py",
+	"private": true,
+	"scripts": {
+		"py:install": ".venv\\Scripts\\python.exe -m pip install -r requirements.txt",
+		"start": ".venv\\Scripts\\python.exe -m uvicorn app:app --host 0.0.0.0 --port 3004",
+		"dev": ".venv\\Scripts\\python.exe -m uvicorn app:app --host 0.0.0.0 --port 3004 --reload"
+	}
+}

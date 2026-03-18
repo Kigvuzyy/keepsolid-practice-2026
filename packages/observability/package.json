@@ -1,0 +1,148 @@
+{
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "@kigvuzyy/observability",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "tsgo --project tsconfig.json --noEmit --lib ESNext && tsup",
+		"lint": "prettier --check . && cross-env TIMING=1 eslint --format=pretty src",
+		"format": "prettier --write . && cross-env TIMING=1 eslint --fix --format=pretty src",
+		"prepack": "pnpm run lint && pnpm run build"
+	},
+	"exports": {
+		".": {
+			"types": "./build/index.d.ts",
+			"import": "./build/index.mjs",
+			"require": "./build/index.js"
+		},
+		"./otel": {
+			"types": "./build/otel/index.d.ts",
+			"import": "./build/otel/index.mjs",
+			"require": "./build/otel/index.js"
+		},
+		"./otel/preload": {
+			"types": "./build/otel/preload.d.ts",
+			"import": "./build/otel/preload.mjs",
+			"require": "./build/otel/preload.js"
+		},
+		"./metrics": {
+			"types": "./build/metrics/index.d.ts",
+			"import": "./build/metrics/index.mjs",
+			"require": "./build/metrics/index.js"
+		},
+		"./logger": {
+			"types": "./build/logger/index.d.ts",
+			"import": "./build/logger/index.mjs",
+			"require": "./build/logger/index.js"
+		},
+		"./logger/winston": {
+			"types": "./build/logger/winston/index.d.ts",
+			"import": "./build/logger/winston/index.mjs",
+			"require": "./build/logger/winston/index.js"
+		},
+		"./logger/nest": {
+			"types": "./build/logger/nest/index.d.ts",
+			"import": "./build/logger/nest/index.mjs",
+			"require": "./build/logger/nest/index.js"
+		},
+		"./logger/*": {
+			"types": "./build/logger/*/index.d.ts",
+			"import": "./build/logger/*/index.mjs",
+			"require": "./build/logger/*/index.js"
+		},
+		"./span": {
+			"types": "./build/span/index.d.ts",
+			"import": "./build/span/index.mjs",
+			"require": "./build/span/index.js"
+		}
+	},
+	"imports": {
+		"#env": {
+			"types": "./build/env/index.d.ts",
+			"import": "./build/env/index.mjs",
+			"require": "./build/env/index.js"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"logger": [
+				"build/logger/index.d.ts"
+			],
+			"logger/*": [
+				"build/logger/*/index.d.ts"
+			],
+			"logger/winston": [
+				"build/logger/winston/index.d.ts"
+			],
+			"logger/nest": [
+				"build/logger/nest/index.d.ts"
+			],
+			"otel": [
+				"build/otel/index.d.ts"
+			],
+			"otel/preload": [
+				"build/otel/preload.d.ts"
+			],
+			"metrics": [
+				"build/metrics/index.d.ts"
+			],
+			"span": [
+				"build/span/index.d.ts"
+			],
+			"*": [
+				"build/index.d.ts"
+			]
+		}
+	},
+	"main": "./build/index.js",
+	"module": "./build/index.mjs",
+	"types": "./build/index.d.ts",
+	"directories": {
+		"lib": "src",
+		"test": "__tests__"
+	},
+	"files": [
+		"build"
+	],
+	"license": "MIT",
+	"dependencies": {
+		"@fastify/otel": "^0.17.1",
+		"@opentelemetry/api": "^1.9.0",
+		"@opentelemetry/api-logs": "^0.210.0",
+		"@opentelemetry/auto-instrumentations-node": "^0.68.0",
+		"@opentelemetry/exporter-logs-otlp-http": "^0.210.0",
+		"@opentelemetry/exporter-metrics-otlp-http": "^0.210.0",
+		"@opentelemetry/exporter-metrics-otlp-proto": "^0.210.0",
+		"@opentelemetry/exporter-trace-otlp-http": "^0.210.0",
+		"@opentelemetry/exporter-trace-otlp-proto": "^0.210.0",
+		"@opentelemetry/instrumentation": "^0.210.0",
+		"@opentelemetry/instrumentation-kafkajs": "^0.19.0",
+		"@opentelemetry/instrumentation-nestjs-core": "^0.56.0",
+		"@opentelemetry/resources": "^2.4.0",
+		"@opentelemetry/sdk-logs": "^0.210.0",
+		"@opentelemetry/sdk-metrics": "^2.4.0",
+		"@opentelemetry/sdk-node": "^0.210.0",
+		"@opentelemetry/semantic-conventions": "^1.39.0",
+		"@prisma/instrumentation": "^7.2.0",
+		"winston": "^3.19.0",
+		"winston-transport": "^4.9.0"
+	},
+	"devDependencies": {
+		"@nestjs/common": "catalog:nest11",
+		"@types/node": "^25.0.2",
+		"esbuild-plugin-version-injector": "^1.2.1",
+		"eslint": "^9.38.0",
+		"eslint-config-neon": "^0.2.9",
+		"prettier": "^3.6.2",
+		"tsc-alias": "^1.8.16",
+		"tsup": "^8.5.0",
+		"typescript": "^5.9.3"
+	},
+	"engines": {
+		"node": ">=25.2.1"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	}
+}

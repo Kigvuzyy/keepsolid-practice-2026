@@ -1,0 +1,40 @@
+{
+	"window.zoomLevel": 2,
+	"eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+	"eslint.useFlatConfig": true,
+	"eslint.workingDirectories": [
+		{ "directory": "${workspaceFolder}" },
+		{ "pattern": "./apps/*/" },
+		{ "pattern": "./packages/*/" }
+	],
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "never",
+		"source.fixAll.eslint": "explicit",
+		"source.fixAll": "explicit"
+	},
+	"editor.trimAutoWhitespace": false,
+	"editor.tabSize": 4,
+	"files.associations": {
+		"tsconfig.json": "jsonc",
+		"tsconfig.build.json": "jsonc",
+		"tsconfig.eslint.json": "jsonc"
+	},
+	"files.insertFinalNewline": true,
+	"files.eol": "\n",
+	"npm.packageManager": "pnpm",
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"[prisma]": {
+		"editor.defaultFormatter": "Prisma.prisma"
+	},
+	"python-envs.pythonProjects": [
+		{
+			"packageManager": "ms-python.python:pip",
+			"envManager": "ms-python.python:system",
+			"path": "${workspaceFolder}/apps/rerank-service-py/.venv"
+		}
+	],
+	"python-envs.defaultEnvManager": "ms-python.python:system"
+}
