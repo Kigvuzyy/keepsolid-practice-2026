@@ -6,7 +6,7 @@ import {
 	DEFAULT_OTEL_ENDPOINT,
 	DEFAULT_SERVICE_NAME,
 	EnvKeys,
-} from "@/env/constants";
+} from "./constants.js";
 
 export type OtelDiagLevel = "debug" | "error" | "info";
 

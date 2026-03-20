@@ -1,0 +1,159 @@
+volumes:
+  rerank_hf_cache:
+
+services:
+  book-service:
+    profiles: [apps]
+    extends:
+      file: compose.common.yaml
+      service: common-service
+    image: kigvuzyy/book-service:latest
+    build:
+      context: ../../
+      dockerfile: ./apps/book-service/Dockerfile
+      args:
+        NODE_VERSION: 25.5.0
+        PNPM_VERSION: 10.30.2
+        PROJECT: book-service
+    container_name: book-service
+    ports:
+      - 3001:3001
+    env_file:
+      - ../env/book-service.env
+    networks: [platform]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      otelcol:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:$${PORT}/api/health/ready >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  ingestion-worker:
+    profiles: [apps]
+    extends:
+      file: compose.common.yaml
+      service: common-service
+    image: kigvuzyy/ingestion-worker:latest
+    build:
+      context: ../../
+      dockerfile: ./apps/ingestion-worker/Dockerfile
+      args:
+        NODE_VERSION: 25.5.0
+        PNPM_VERSION: 10.30.2
+        PROJECT: ingestion-worker
+    container_name: ingestion-worker
+    ports:
+      - 3003:3003
+    env_file:
+      - ../env/ingestion-worker.env
+    networks: [platform]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      otelcol:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:$${PORT}/api/health/ready >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  search-service:
+    profiles: [apps]
+    extends:
+      file: compose.common.yaml
+      service: common-service
+    image: kigvuzyy/search-service:latest
+    build:
+      context: ../../
+      dockerfile: ./apps/search-service/Dockerfile
+      args:
+        NODE_VERSION: 25.5.0
+        PNPM_VERSION: 10.30.2
+        PROJECT: search-service
+    container_name: search-service
+    ports:
+      - 3002:3002
+    env_file:
+      - ../env/search-service.env
+    networks: [platform]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      rerank-service-py:
+        condition: service_healthy
+      otelcol:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:$${PORT}/api/health/ready >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  rerank-service-py:
+    profiles: [apps]
+    extends:
+      file: compose.common.yaml
+      service: common-service
+    image: kigvuzyy/rerank-service-py:${RERANK_COMPUTE_PROFILE:-cpu}
+    build:
+      context: ../../apps/rerank-service-py
+      dockerfile: ./Dockerfile
+      args:
+        PYTHON_VERSION: 3.13
+        APP_PORT: 3004
+        RERANK_COMPUTE_PROFILE: ${RERANK_COMPUTE_PROFILE:-cpu}
+    container_name: rerank-service-py
+    ports:
+      - 3004:3004
+    env_file:
+      - ../env/rerank-service-py.env
+    networks: [platform]
+    volumes:
+      - rerank_hf_cache:/app/.cache/huggingface
+    depends_on:
+      otelcol:
+        condition: service_healthy

@@ -1,0 +1,120 @@
+volumes:
+  postgres_data:
+  qdrant_data:
+  kafka_data:
+  redis_data:
+
+services:
+  postgres:
+    container_name: pg
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file:
+      - ../env/integrations.postgres.env
+    networks: [platform]
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_replication_slots=10
+      - -c
+      - max_wal_senders=10
+      - -c
+      - wal_keep_size=64MB
+    volumes:
+      - postgres_data:/home/postgres
+      - ../config/postgres/init-db-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    container_name: qdrant
+    image: qdrant/qdrant:v1.17
+    restart: unless-stopped
+    env_file:
+      - ../env/integrations.qdrant.env
+    networks: [platform]
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: [
+        "CMD",
+        "/usr/bin/bash",
+        "-lc",
+        "exec 3<>/dev/tcp/127.0.0.1/6333 && printf 'GET /readyz HTTP/1.1\\r\\nHost: 127.0.0.1\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '200 OK' <&3",
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  kafka:
+    container_name: kafka
+    image: apache/kafka:3.9.0
+    restart: unless-stopped
+    env_file:
+      - ../env/integrations.kafka.env
+    networks: [platform]
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "([ -x /opt/kafka/bin/kafka-broker-api-versions.sh ] && /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server 127.0.0.1:9094 || /opt/kafka/bin/kafka-broker-api-versions --bootstrap-server 127.0.0.1:9094) >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  connect:
+    container_name: connect
+    image: debezium/connect:2.6
+    restart: unless-stopped
+    env_file:
+      - ../env/integrations.connect.env
+    networks: [platform]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8083/connectors >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    restart: unless-stopped
+    networks: [platform]
+    env_file:
+      - ../env/integrations.kafka-ui.env
+    depends_on:
+      - kafka
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    networks: [platform]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

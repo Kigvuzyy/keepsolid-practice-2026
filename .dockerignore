@@ -2,7 +2,10 @@
 **/generated
 
 # Observability
-./observability
+observability/
+
+# Local datasets
+._books/
 
 # Workspace manifests only
 .pnpm-store
@@ -39,6 +42,8 @@
 **/coverage
 **/__tests__
 **/out
+**/__pycache__/
+**/*.py[cod]
 
 # yarn
 .pnp.*
@@ -53,6 +58,15 @@
 **/.prettiercache
 **/.eslintcache
 **/.vercel
+**/.venv/
+**/venv/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.cache/
+**/.huggingface/
+**/hf_cache/
+**/models/
 
 # Docker specific
 .github

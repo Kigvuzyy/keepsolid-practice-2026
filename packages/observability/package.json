@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"build": "tsgo --project tsconfig.json --noEmit --lib ESNext && tsup",
+		"build": "tsgo --project tsconfig.json --noEmit && tsup",
 		"lint": "prettier --check . && cross-env TIMING=1 eslint --format=pretty src",
 		"format": "prettier --write . && cross-env TIMING=1 eslint --fix --format=pretty src",
 		"prepack": "pnpm run lint && pnpm run build"
@@ -132,14 +132,12 @@
 		"@types/node": "^25.0.2",
 		"esbuild-plugin-version-injector": "^1.2.1",
 		"eslint": "^9.38.0",
-		"eslint-config-neon": "^0.2.9",
 		"prettier": "^3.6.2",
-		"tsc-alias": "^1.8.16",
 		"tsup": "^8.5.0",
 		"typescript": "^5.9.3"
 	},
 	"engines": {
-		"node": ">=25.2.1"
+		"node": ">=25"
 	},
 	"publishConfig": {
 		"access": "public",

@@ -1,0 +1,49 @@
+multitenancy_enabled: false
+
+ingester:
+  ring:
+    replication_factor: 1
+
+server:
+  http_listen_port: 9009
+  log_level: info
+
+memberlist:
+  join_members: ["mimir"]
+
+blocks_storage:
+  backend: s3
+  bucket_store:
+    sync_dir: /data/tsdb-sync
+  tsdb:
+    dir: /data/tsdb
+  s3:
+    endpoint: minio:9000
+    bucket_name: ${MIMIR_BUCKET}
+    access_key_id: ${MINIO_ROOT_USER}
+    secret_access_key: ${MINIO_ROOT_PASSWORD}
+    insecure: true
+
+compactor:
+  data_dir: /data/compactor
+  sharding_ring:
+    kvstore:
+      store: memberlist
+
+ruler_storage:
+  backend: s3
+  s3:
+    endpoint: minio:9000
+    bucket_name: ${MIMIR_RULER_BUCKET}
+    access_key_id: ${MINIO_ROOT_USER}
+    secret_access_key: ${MINIO_ROOT_PASSWORD}
+    insecure: true
+
+alertmanager_storage:
+  backend: s3
+  s3:
+    endpoint: minio:9000
+    bucket_name: ${MIMIR_AM_BUCKET}
+    access_key_id: ${MINIO_ROOT_USER}
+    secret_access_key: ${MINIO_ROOT_PASSWORD}
+    insecure: true

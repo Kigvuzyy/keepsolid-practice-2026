@@ -1,5 +1,5 @@
 import type { LoggerService } from "@nestjs/common";
-import type { AppLogger } from "@/logger/winston/create-winston-logger";
+import type { AppLogger } from "../winston/create-winston-logger.js";
 
 type Meta = Readonly<Record<string, unknown>>;
 

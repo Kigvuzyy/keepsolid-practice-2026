@@ -55,13 +55,10 @@ export class SearchBooksHybridService {
 		const cachedSnapshot = await this.rerankCache.get(query);
 
 		if (cachedSnapshot) {
-			console.log(cachedSnapshot);
 			return this.rerankCachePolicy.buildPage(cachedSnapshot, offset);
 		}
 
 		const snapshot = await this.buildRerankedSnapshot(query, rerankCacheWindow);
-
-		console.log(snapshot);
 
 		return this.rerankCachePolicy.buildPage(snapshot, offset);
 	}

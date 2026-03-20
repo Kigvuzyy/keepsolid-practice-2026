@@ -48,7 +48,6 @@
 		"@prisma/client": "catalog:prisma",
 		"dotenv": "^17.2.3",
 		"kafkajs": "^2.2.4",
-		"minio": "^8.0.6",
 		"nestjs-cls": "^6.2.0",
 		"nestjs-zod": "^5.0.1",
 		"reflect-metadata": "catalog:nest11",
@@ -58,11 +57,9 @@
 	},
 	"devDependencies": {
 		"@types/node": "^25.0.2",
-		"fastify": "^5.6.2",
-		"prisma": "catalog:prisma",
-		"tsconfig-paths": "^4.2.0"
+		"prisma": "catalog:prisma"
 	},
 	"engines": {
-		"node": ">=25.5.0"
+		"node": ">=25"
 	}
 }

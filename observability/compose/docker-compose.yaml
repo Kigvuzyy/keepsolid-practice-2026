@@ -1,0 +1,10 @@
+name: library_search
+
+include:
+  - compose.otel.yaml
+  - compose.integrations.yaml
+  - compose.services.yaml
+
+networks:
+  platform:
+    name: platform

@@ -1,0 +1,12 @@
+services:
+  otelcol:
+    ports: ["4317:4317", "4318:4318"]
+
+  grafana:
+    ports: ["4040:3000"]
+
+  minio:
+    ports: ["9000:9000", "9001:9001"]
+
+  tempo:
+    ports: ["3200:3200"]

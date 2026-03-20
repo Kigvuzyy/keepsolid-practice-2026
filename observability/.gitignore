@@ -1,0 +1,4 @@
+# Keep observability configs under version control.
+# Ignore local env files, but keep versioned templates.
+env/*.env
+!env/*.env.example

@@ -1,0 +1,62 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+memberlist:
+  bind_port: 7946
+  join_members:
+    - tempo:7946
+  abort_if_cluster_join_fails: false
+
+storage:
+  trace:
+    backend: s3
+
+    wal:
+      path: /var/tempo/wal
+
+    s3:
+      endpoint: minio:9000
+      bucket: ${TEMPO_BUCKET}
+      access_key: ${MINIO_ROOT_USER}
+      secret_key: ${MINIO_ROOT_PASSWORD}
+      insecure: true
+      forcepathstyle: true
+
+compactor:
+  compaction:
+    block_retention: 168h
+
+metrics_generator:
+  ring:
+    kvstore:
+      store: memberlist
+
+  traces_storage:
+    path: /var/tempo/generator/traces
+
+  storage:
+    path: /var/tempo/generator/metrics
+    remote_write:
+      - url: http://mimir:9009/api/v1/push
+
+  processor:
+    local_blocks:
+      filter_server_spans: false
+      flush_to_storage: true
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - local-blocks
+        - span-metrics
+        - service-graphs

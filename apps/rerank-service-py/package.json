@@ -3,8 +3,10 @@
 	"name": "rerank-service-py",
 	"private": true,
 	"scripts": {
-		"py:install": ".venv\\Scripts\\python.exe -m pip install -r requirements.txt",
-		"start": ".venv\\Scripts\\python.exe -m uvicorn app:app --host 0.0.0.0 --port 3004",
-		"dev": ".venv\\Scripts\\python.exe -m uvicorn app:app --host 0.0.0.0 --port 3004 --reload"
+		"py:install": ".venv\\Scripts\\python.exe -m pip install --upgrade pip && .venv\\Scripts\\python.exe -m pip install --index-url https://download.pytorch.org/whl/cpu torch && .venv\\Scripts\\python.exe -m pip install -r requirements.cpu.txt",
+		"py:install:cpu": ".venv\\Scripts\\python.exe -m pip install --upgrade pip && .venv\\Scripts\\python.exe -m pip install --index-url https://download.pytorch.org/whl/cpu torch && .venv\\Scripts\\python.exe -m pip install -r requirements.cpu.txt",
+		"py:install:gpu": ".venv\\Scripts\\python.exe -m pip install --upgrade pip && .venv\\Scripts\\python.exe -m pip install -r requirements.gpu.txt",
+		"start": ".venv\\Scripts\\python.exe run.py",
+		"dev": "set UVICORN_RELOAD=true&& .venv\\Scripts\\python.exe run.py"
 	}
 }

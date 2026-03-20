@@ -64,14 +64,12 @@
 		"@types/node": "^25.0.2",
 		"esbuild-plugin-version-injector": "^1.2.1",
 		"eslint": "^9.38.0",
-		"eslint-config-neon": "^0.2.9",
 		"prettier": "^3.6.2",
-		"tsc-alias": "^1.8.16",
 		"tsup": "^8.5.0",
 		"typescript": "^5.9.3"
 	},
 	"engines": {
-		"node": ">=25.5.0"
+		"node": ">=25"
 	},
 	"publishConfig": {
 		"access": "public",

@@ -1,0 +1,43 @@
+{
+	"connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+	"plugin.name": "pgoutput",
+
+	"database.hostname": "postgres",
+	"database.port": "5432",
+	"database.user": "debezium",
+	"database.password": "debezium",
+	"database.dbname": "book_db",
+
+	"slot.name": "debezium_outbox",
+	"publication.name": "dbz_publication",
+	"publication.autocreate.mode": "disabled",
+
+	"table.include.list": "public.outbox_events",
+	"include.schema.changes": "false",
+	"tombstones.on.delete": "false",
+
+	"topic.prefix": "pg",
+
+	"key.converter": "org.apache.kafka.connect.json.JsonConverter",
+	"key.converter.schemas.enable": "false",
+	"value.converter": "org.apache.kafka.connect.json.JsonConverter",
+	"value.converter.schemas.enable": "false",
+
+	"transforms": "outbox",
+	"transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+
+	"transforms.outbox.table.field.event.id": "id",
+	"transforms.outbox.table.field.event.key": "aggregate_id",
+	"transforms.outbox.table.field.event.type": "type",
+	"transforms.outbox.table.field.event.payload": "payload",
+	"transforms.outbox.table.field.event.timestamp": "occurred_at",
+	"transforms.outbox.table.expand.json.payload": "true",
+
+	"transforms.outbox.route.by.field": "topic",
+	"transforms.outbox.route.topic.replacement": "${routedByValue}",
+
+	"transforms.outbox.table.fields.additional.placement": "id:header:id,type:header:x-event-type,occurred_at:header:x-occurred-at,source:header:x-source,instance:header:x-instance-id,service_version:header:x-app-version,spec_version:header:x-spec-version,correlation_id:header:x-correlation-id,causation_id:header:x-causation-id,trace_parent:header:traceparent,trace_state:header:tracestate,aggregate_type:header:x-aggregate-type,aggregate_id:header:x-aggregate-id",
+
+	"max.queue.size": "8192",
+	"max.batch.size": "2048"
+}

@@ -51,12 +51,9 @@
 		"@nestjs/terminus": "catalog:nest11",
 		"@prisma/adapter-pg": "catalog:prisma",
 		"@prisma/client": "catalog:prisma",
-		"@qdrant/js-client-rest": "^1.17.0",
 		"cheerio": "^1.2.0",
 		"dotenv": "^17.2.3",
-		"epub2": "^3.0.2",
 		"kafkajs": "^2.2.4",
-		"minio": "^8.0.6",
 		"nestjs-cls": "^6.2.0",
 		"nestjs-zod": "^5.0.1",
 		"reflect-metadata": "catalog:nest11",
@@ -68,11 +65,9 @@
 	"devDependencies": {
 		"@types/node": "^25.0.2",
 		"@types/yauzl": "^2.10.3",
-		"fastify": "^5.6.2",
-		"prisma": "catalog:prisma",
-		"tsconfig-paths": "^4.2.0"
+		"prisma": "catalog:prisma"
 	},
 	"engines": {
-		"node": ">=25.5.0"
+		"node": ">=25"
 	}
 }

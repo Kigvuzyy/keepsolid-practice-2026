@@ -19,6 +19,7 @@ logger = logging.getLogger("rerank-service")
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
+    port: int = 3004
     rerank_model: str = "BAAI/bge-reranker-v2-m3"
     rerank_fallback_model: str | None = None
     rerank_backend: Literal["torch", "onnx", "openvino"] = "onnx"
@@ -237,12 +238,15 @@ def build_cross_encoder(
     selected_model_name: str,
     backend: Literal["torch", "onnx", "openvino"],
 ) -> CrossEncoder:
+    model_kwargs = build_model_kwargs(backend)
+
     return CrossEncoder(
         selected_model_name,
         backend=backend,
         device=settings.rerank_device,
         local_files_only=settings.rerank_local_files_only,
         max_length=settings.rerank_max_length,
+        model_kwargs=model_kwargs,
     )
 
 
@@ -255,15 +259,50 @@ def truncate_text(value: str, max_chars: int) -> str:
     return trimmed[:max_chars]
 
 
+def build_model_kwargs(backend: Literal["torch", "onnx", "openvino"]) -> dict[str, Any]:
+    if backend != "onnx":
+        return {}
+
+    return {
+        "provider": select_onnx_provider(),
+        "file_name": "onnx/model.onnx",
+    }
+
+
+def select_onnx_provider() -> str:
+    normalized_device = settings.rerank_device.strip().lower()
+
+    if normalized_device.startswith("cuda"):
+        return "CUDAExecutionProvider"
+
+    return "CPUExecutionProvider"
+
+
 def configure_runtime_paths() -> None:
-    temp_dir = Path(settings.rerank_temp_dir).resolve()
+    configured_temp_dir = Path(settings.rerank_temp_dir).expanduser()
 
-    temp_dir.mkdir(parents=True, exist_ok=True)
+    if not configured_temp_dir.is_absolute():
+        configured_temp_dir = (Path.cwd() / configured_temp_dir).resolve()
 
-    os.environ["TMP"] = str(temp_dir)
-    os.environ["TEMP"] = str(temp_dir)
-    os.environ["TMPDIR"] = str(temp_dir)
-    tempfile.tempdir = str(temp_dir)
+    fallback_temp_dir = (Path(tempfile.gettempdir()) / "rerank-service-py").resolve()
+
+    for candidate in (configured_temp_dir, fallback_temp_dir):
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+
+            probe_file = candidate / ".write-test"
+            probe_file.write_text("ok", encoding="utf-8")
+            probe_file.unlink(missing_ok=True)
+
+            os.environ["TMP"] = str(candidate)
+            os.environ["TEMP"] = str(candidate)
+            os.environ["TMPDIR"] = str(candidate)
+            tempfile.tempdir = str(candidate)
+            return
+        except OSError:
+            logger.warning("Temp directory '%s' is unavailable. Trying fallback.", candidate)
+
+    raise RuntimeError("Failed to initialize a writable temp directory for rerank-service")
 
 
 configure_runtime_paths()

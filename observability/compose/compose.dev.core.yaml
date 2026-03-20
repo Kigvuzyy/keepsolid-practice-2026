@@ -1,0 +1,18 @@
+services:
+  postgres:
+    ports: ["5432:5432"]
+
+  qdrant:
+    ports: ["6333:6333"]
+
+  kafka:
+    ports: ["9092:9092"]
+
+  connect:
+    ports: ["8083:8083"]
+
+  kafka-ui:
+    ports: ["8080:8080"]
+
+  redis:
+    ports: ["6379:6379"]

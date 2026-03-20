@@ -1,0 +1,33 @@
+SELECT 'CREATE DATABASE book_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'book_db')\gexec
+
+SELECT 'CREATE DATABASE worker_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'worker_db')\gexec
+
+SELECT 'CREATE DATABASE search_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'search_db')\gexec
+
+GRANT CONNECT ON DATABASE book_db TO debezium;
+GRANT CONNECT ON DATABASE worker_db TO debezium;
+GRANT CONNECT ON DATABASE search_db TO debezium;
+
+\connect book_db
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+GRANT USAGE ON SCHEMA public TO debezium;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO debezium;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO debezium;
+
+\connect worker_db
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+GRANT USAGE ON SCHEMA public TO debezium;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO debezium;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO debezium;
+
+\connect search_db
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+GRANT USAGE ON SCHEMA public TO debezium;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO debezium;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO debezium;

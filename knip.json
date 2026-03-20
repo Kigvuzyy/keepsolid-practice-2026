@@ -1,0 +1,12 @@
+{
+	"$schema": "https://unpkg.com/knip@latest/schema.json",
+	"workspaces": {
+		"apps/*": {
+			"project": ["src/**/*.{ts,tsx}"]
+		},
+		"packages/*": {
+			"project": ["src/**/*.{ts,tsx}"]
+		}
+	},
+	"ignoreWorkspaces": ["apps/rerank-service-py"]
+}

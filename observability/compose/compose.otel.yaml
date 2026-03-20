@@ -1,0 +1,164 @@
+networks:
+  observability:
+    name: observability
+
+volumes:
+  grafana_data:
+  loki_data:
+  tempo_data:
+  mimir_data:
+  minio_data:
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    env_file:
+      - ../env/otel.runtime.env
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../config/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks: [observability]
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      mimir:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "if command -v curl >/dev/null 2>&1; then curl -fsS http://127.0.0.1:3000/api/health >/dev/null; else wget -qO- http://127.0.0.1:3000/api/health >/dev/null; fi",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/config.yml"]
+    volumes:
+      - loki_data:/loki
+      - ../config/loki/config.yml:/etc/loki/config.yml:ro
+    networks: [observability]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "if command -v curl >/dev/null 2>&1; then curl -fsS http://127.0.0.1:3100/loki/api/v1/status/buildinfo >/dev/null; else wget -qO- http://127.0.0.1:3100/loki/api/v1/status/buildinfo >/dev/null; fi",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    restart: unless-stopped
+    command:
+      - -config.file=/etc/tempo/config.yml
+      - -config.expand-env=true
+    env_file:
+      - ../env/compose.env
+    volumes:
+      - tempo_data:/var/tempo
+      - ../config/tempo/config.yml:/etc/tempo/config.yml:ro
+    networks: [observability]
+    depends_on:
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  mimir:
+    image: grafana/mimir:latest
+    container_name: mimir
+    restart: unless-stopped
+    command:
+      - "-config.file=/etc/mimir/config.yml"
+      - "-config.expand-env=true"
+    env_file:
+      - ../env/compose.env
+    volumes:
+      - mimir_data:/data
+      - ../config/mimir/config.yml:/etc/mimir/config.yml:ro
+    networks: [observability]
+    depends_on:
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    env_file:
+      - ../env/compose.env
+    volumes:
+      - minio_data:/data
+    networks: [observability, platform]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "if command -v curl >/dev/null 2>&1; then curl -fsS http://127.0.0.1:9000/minio/health/ready >/dev/null; else wget -qO- http://127.0.0.1:9000/minio/health/ready >/dev/null; fi",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    env_file:
+      - ../env/compose.env
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks: [observability]
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set lgtm http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} &&
+      mc mb -p lgtm/$${MIMIR_BUCKET} || true &&
+      mc mb -p lgtm/$${MIMIR_RULER_BUCKET} || true &&
+      mc mb -p lgtm/$${MIMIR_AM_BUCKET} || true &&
+      mc mb -p lgtm/$${TEMPO_BUCKET} || true &&
+      mc mb -p lgtm/$${BOOKS_BUCKET} || true &&
+      mc mb -p lgtm/$${TEMP_BUCKET} || true &&
+      echo 'Buckets are ready.'
+      "
+    restart: "no"
+    healthcheck:
+      test: ["NONE"]
+
+  otelcol:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otelcol
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol/config.yml"]
+    volumes:
+      - ../config/otelcol/config.yml:/etc/otelcol/config.yml:ro
+    networks: [observability, platform]
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      mimir:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "/otelcol-contrib", "validate", "--config=/etc/otelcol/config.yml"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
