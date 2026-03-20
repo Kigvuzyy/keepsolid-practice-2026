@@ -413,6 +413,12 @@ GET http://localhost:3002/api/v1/search?q=Квантовая механика
 - `RERANK_BACKEND=onnx`
 - `RERANK_DEVICE=gpu` на `RTX 3070`
 
+Затрати з OpenAI:
+
+- embeddings-модель: `text-embedding-3-small`
+- індексація `~41 500` points: `~$0.4`
+- один короткий текстовий запит: `~$0.0000004`
+
 Приклад відповіді:
 
 ```json
