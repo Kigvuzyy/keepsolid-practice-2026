@@ -385,3 +385,81 @@ Health endpoints:
 - `http://localhost:3003/api/health/live`
 - `http://localhost:3003/api/health/ready`
 - `http://localhost:3004/health`
+
+### Приклад пошуку
+
+Приклад запиту:
+
+```text
+GET http://localhost:3002/api/v1/search?q=Квантовая механика
+```
+
+Як працює цей запит:
+
+1. `search-service` приймає текст запиту та формує набір кандидатів.
+2. У `Qdrant` виконується гібридний пошук:
+   dense-вектори використовуються для semantic similarity
+   sparse-вектори використовуються для lexical matching
+3. Первинний список кандидатів передається в `rerank-service-py`.
+4. Модель rerank переобчислює релевантність і повертає фінальний порядок результатів.
+5. API віддає клієнту пагінований список книг із метаданими.
+
+Поточний локальний стенд:
+
+- `Qdrant`: близько `200` книг
+- `Qdrant`: близько `41 500` points dense-векторів розмірності `1536`
+- `Qdrant`: близько `41 500` points sparse-векторів
+- `RERANK_MODEL=onnx-community/bge-reranker-v2-m3-ONNX`
+- `RERANK_BACKEND=onnx`
+- `RERANK_DEVICE=gpu` на `RTX 3070`
+
+Приклад відповіді:
+
+```json
+{
+	"offset": 0,
+	"limit": 20,
+	"nextOffset": 20,
+	"items": [
+		{
+			"score": 0.8333334,
+			"rerankScore": 0.9775040149688721,
+			"bookId": "28328044468895744",
+			"title": "Сто лет недосказанности. Квантовая механика для всех в 25 эссе",
+			"description": null,
+			"coverObjectKey": "books/28328044468895744/cover/original.jpg",
+			"authors": ["Семихатов А.М."]
+		},
+		{
+			"score": 0.8333334,
+			"rerankScore": 0.9610480666160583,
+			"bookId": "28328626667651072",
+			"title": "Исследование о природе и причинах богатства народов (Великие экономисты)",
+			"description": null,
+			"coverObjectKey": "books/28328626667651072/cover/original.jpg",
+			"authors": ["Адам Смит"]
+		},
+		{
+			"score": 0.045548655,
+			"rerankScore": 0.7782214283943176,
+			"bookId": "28334719351390208",
+			"title": "Бесконечная сила. [...] - (МИФ. Научпоп)",
+			"description": null,
+			"coverObjectKey": "books/28334719351390208/cover/original.jpg",
+			"authors": ["Строгац Стивен"]
+		}
+	]
+}
+```
+
+Як інтерпретувати поля:
+
+- `offset`, `limit`, `nextOffset` відповідають за пагінацію
+- `score` це оцінка первинного гібридного пошуку
+- `rerankScore` це оцінка після повторного переранжування моделлю
+- `bookId`, `title`, `authors`, `coverObjectKey` це метадані книги для побудови UI або подальшої API-відповіді
+
+У цьому прикладі першим результатом повертається книга про квантову механіку з найвищим `rerankScore`, тобто rerank-модель визнала її найбільш релевантною до запиту. Це добре показує різницю між первинним пошуком по індексу та фінальним упорядкуванням результатів.
+
+Trace холодного запиту на пошук з Grafana/Tempo:
+![Trace запиту пошуку](docs/images/image1.jpg)
