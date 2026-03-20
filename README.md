@@ -161,44 +161,6 @@ docker compose `
   up -d
 ```
 
-Важливо: init-скрипти Postgres створюють `book_db`, `worker_db` і `search_db` лише при першому старті нового volume. Якщо стек уже запускався раніше, потрібен чистий рестарт.
-
-Linux/macOS:
-
-```bash
-docker compose \
-  --env-file observability/env/compose.env \
-  -f observability/compose/docker-compose.yaml \
-  -f observability/compose/compose.dev.core.yaml \
-  -f observability/compose/compose.dev.otel.yaml \
-  down -v
-
-docker compose \
-  --env-file observability/env/compose.env \
-  -f observability/compose/docker-compose.yaml \
-  -f observability/compose/compose.dev.core.yaml \
-  -f observability/compose/compose.dev.otel.yaml \
-  up -d
-```
-
-Windows (PowerShell):
-
-```powershell
-docker compose `
-  --env-file observability/env/compose.env `
-  -f observability/compose/docker-compose.yaml `
-  -f observability/compose/compose.dev.core.yaml `
-  -f observability/compose/compose.dev.otel.yaml `
-  down -v
-
-docker compose `
-  --env-file observability/env/compose.env `
-  -f observability/compose/docker-compose.yaml `
-  -f observability/compose/compose.dev.core.yaml `
-  -f observability/compose/compose.dev.otel.yaml `
-  up -d
-```
-
 ### 5. Застосувати Prisma migrations
 
 ```bash
