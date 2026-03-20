@@ -16,7 +16,7 @@ import { ConfigService } from "@/infrastructure/config/config.service";
 export class MinioObjectStorageAdapter implements ObjectStoragePort {
 	private readonly bucketName: string;
 
-	private readonly publicBaseUrl: URL | undefined;
+	private readonly presigningClient: MinioService;
 
 	public constructor(
 		@Inject(MinioService)
@@ -28,7 +28,9 @@ export class MinioObjectStorageAdapter implements ObjectStoragePort {
 		const publicBaseUrl = this.config.get("S3_PUBLIC_BASE_URL");
 
 		this.bucketName = this.config.get("S3_BUCKET");
-		this.publicBaseUrl = publicBaseUrl ? new URL(publicBaseUrl) : undefined;
+		this.presigningClient = publicBaseUrl
+			? this.createPresigningClient(new URL(publicBaseUrl))
+			: this.minio;
 	}
 
 	public defaultBucket(): string {
@@ -53,10 +55,15 @@ export class MinioObjectStorageAdapter implements ObjectStoragePort {
 	}): Promise<PresignedUrlPutResult> {
 		const { bucket, objectKey, expiresSeconds } = params;
 
-		const url = await this.minio.presignedPutObject(bucket, objectKey, expiresSeconds);
+		const url = await this.presigningClient.presignedPutObject(
+			bucket,
+			objectKey,
+			expiresSeconds,
+		);
+
 		const expiresAt = new Date(Date.now() + expiresSeconds * 1_000).toISOString();
 
-		return { bucket, objectKey, url: this.toPublicUrl(url), method: "PUT", expiresAt };
+		return { bucket, objectKey, url, method: "PUT", expiresAt };
 	}
 
 	public async presignGet(params: {
@@ -66,10 +73,15 @@ export class MinioObjectStorageAdapter implements ObjectStoragePort {
 	}): Promise<PresignedUrlGetResult> {
 		const { bucket, objectKey, expiresSeconds } = params;
 
-		const url = await this.minio.presignedGetObject(bucket, objectKey, expiresSeconds);
+		const url = await this.presigningClient.presignedGetObject(
+			bucket,
+			objectKey,
+			expiresSeconds,
+		);
+
 		const expiresAt = new Date(Date.now() + expiresSeconds * 1_000).toISOString();
 
-		return { bucket, objectKey, url: this.toPublicUrl(url), method: "GET", expiresAt };
+		return { bucket, objectKey, url, method: "GET", expiresAt };
 	}
 
 	public async remove(params: { bucket: string; objectKey: string }): Promise<void> {
@@ -106,18 +118,25 @@ export class MinioObjectStorageAdapter implements ObjectStoragePort {
 		}
 	}
 
-	private toPublicUrl(url: string): string {
-		if (!this.publicBaseUrl) {
-			return url;
+	private createPresigningClient(publicBaseUrl: URL): MinioService {
+		let port = 80;
+
+		if (publicBaseUrl.protocol === "https:") {
+			port = 443;
 		}
 
-		const signedUrl = new URL(url);
+		if (publicBaseUrl.port.length > 0) {
+			port = Number.parseInt(publicBaseUrl.port, 10);
+		}
 
-		signedUrl.protocol = this.publicBaseUrl.protocol;
-		signedUrl.hostname = this.publicBaseUrl.hostname;
-		signedUrl.port = this.publicBaseUrl.port;
-
-		return signedUrl.href;
+		return new MinioService({
+			endPoint: publicBaseUrl.hostname,
+			port,
+			useSSL: publicBaseUrl.protocol === "https:",
+			accessKey: this.config.get("S3_ACCESS_KEY"),
+			secretKey: this.config.get("S3_SECRET_KEY"),
+			region: this.config.get("S3_REGION"),
+		});
 	}
 
 	private isObjectMissingError(error: unknown): boolean {

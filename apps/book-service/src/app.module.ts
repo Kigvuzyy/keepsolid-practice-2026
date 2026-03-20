@@ -41,6 +41,7 @@ import { PrismaService } from "@/infrastructure/persistence/prisma/prisma.servic
 				useSSL: config.get("S3_USE_SSL"),
 				accessKey: config.get("S3_ACCESS_KEY"),
 				secretKey: config.get("S3_SECRET_KEY"),
+				region: config.get("S3_REGION"),
 			}),
 		}),
 

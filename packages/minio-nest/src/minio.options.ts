@@ -6,6 +6,7 @@ export interface MinioModuleOptions {
 	readonly useSSL: boolean;
 	readonly accessKey: string;
 	readonly secretKey: string;
+	readonly region?: string;
 	readonly global?: boolean;
 }
 
