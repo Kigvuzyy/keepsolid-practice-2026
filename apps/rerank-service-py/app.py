@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     rerank_candidate_max_chars: int = 1_600
     rerank_allow_backend_fallback: bool = True
     rerank_local_files_only: bool = True
+    rerank_trust_remote_code: bool = False
     rerank_temp_dir: str = ".cache/temp"
 
 
@@ -244,6 +245,7 @@ def build_cross_encoder(
         selected_model_name,
         backend=backend,
         device=settings.rerank_device,
+        trust_remote_code=settings.rerank_trust_remote_code,
         local_files_only=settings.rerank_local_files_only,
         max_length=settings.rerank_max_length,
         model_kwargs=model_kwargs,
